@@ -24,13 +24,13 @@ router.get('/search', authenticate, authorizeRole('freelancer'), searchJobs)
 router.get('/my-jobs', authenticate, authorizeRole('client'), getMyJobs)
 
 // Päivitä toimeksianto (vain omat, vain client)
-router.put('/:id', authenticate, authorizeRole('client'), validateCategory, updateJob)
+router.put('/:id', authenticate, authorizeRole('client'), updateJob)
 
 // Poista toimeksianto (vain omat, vain client)
 router.delete('/:id', authenticate, authorizeRole('client'), deleteJob)
 
-
-
 module.exports = router
-// Tämä tiedosto sisältää reitit toimeksiantojen käsittelyyn
-// kuten luomiseen, hakemiseen, päivittämiseen ja poistamiseen
+
+// // Tämä tiedosto sisältää reitit toimeksiantojen luomiseen, hakemiseen, päivittämiseen ja poistamiseen
+// // sekä middlewaret, jotka suojaavat reittejä ja tarkistavat käyttäjän todennuksen ja roolin
+// // Reitit on jaettu kolmeen osaan: client, freelancer ja admin

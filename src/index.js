@@ -43,6 +43,16 @@ const categoryRoutes = require('./routes/categoryRoutes')
 app.use('/api/categories', categoryRoutes)
 console.log("Category-reitit ladattu")
 
+// Freelancer-reitit
+const freelancerRoutes = require('./routes/freelancerRoutes')
+app.use('/api/freelancers', freelancerRoutes)
+console.log("Freelancer-reitit ladattu")
+
+// Public-reitit
+const publicRoutes = require('./routes/publicRoutes')
+app.use('/api/public', publicRoutes)
+console.log("Public-reitit ladattu")
+
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {
   console.log(`Serveri käynnissä http://localhost:${PORT}`)
