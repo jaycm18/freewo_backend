@@ -15,7 +15,7 @@ app.use(cors({
   credentials: true               // mahdollistaa cookieiden lähetyksen
 }))
 app.use(express.json())
-app.use(cookieParser()) // 🆕 Lisätään middleware käyttöön
+app.use(cookieParser()) // Lisätään middleware käyttöön
 
 
 // Testireitti
@@ -27,6 +27,21 @@ app.get('/', (req, res) => {
 const authRoutes = require('./routes/auth')
 app.use('/api', authRoutes)
 console.log("Auth-reitit ladattu")
+
+// Admin-reitit
+const adminRoutes = require('./routes/adminRoutes')
+app.use('/api/admin', adminRoutes)
+console.log("Admin-reitit ladattu")
+
+// Job-reitit
+const jobRoutes = require('./routes/jobRoutes')
+app.use('/api/jobs', jobRoutes)
+console.log("Job-reitit ladattu")
+
+// Category-reitit
+const categoryRoutes = require('./routes/categoryRoutes')
+app.use('/api/categories', categoryRoutes)
+console.log("Category-reitit ladattu")
 
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {

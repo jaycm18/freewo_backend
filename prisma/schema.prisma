@@ -12,8 +12,17 @@ model User {
   email        String   @unique
   password     String
   role         String
+  name         String?
+  category     String?
   refreshToken String?  // Tämä on valinnainen kenttä (nullable)
   createdAt    DateTime @default(now())
+  jobs         Job[]    @relation("ClientJobs")  // Linkittää Clientiin
+}
+
+enum Role {
+  CLIENT
+  FREELANCER
+  ADMIN
 }
 
 model Job {
@@ -25,4 +34,5 @@ model Job {
   budget      Float
   createdAt   DateTime @default(now())
   clientId    String
+  client      User     @relation("ClientJobs", fields: [clientId], references: [id])  // Lisää linkin takaisin Useriin
 }
