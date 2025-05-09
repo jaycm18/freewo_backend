@@ -62,19 +62,27 @@ const deleteFreelancerProfile = async (req, res) => {
   }
 };
 
-// Haku nimellä, kategorialla ja/tai sijainnilla
+// Haku nimellä, kategorialla/skillseillä ja/tai sijainnilla
+// src/controllers/freelancerController.js
 const searchFreelancers = async (req, res) => {
-  const { name, category, location } = req.query;
+  const { q } = req.query
+
+  const filters = q && q.trim() !== ''
+    ? {
+        OR: [
+          { name: { contains: q, mode: 'insensitive' } },
+          { category: { contains: q, mode: 'insensitive' } },
+          { location: { contains: q, mode: 'insensitive' } },
+          { skills: { contains: q, mode: 'insensitive' } }
+        ]
+      }
+    : {}
 
   try {
     const freelancers = await prisma.user.findMany({
       where: {
-        role: 'FREELANCER',
-        AND: [
-          name ? { name: { contains: name, mode: 'insensitive' } } : {},
-          category ? { category: { equals: category, mode: 'insensitive' } } : {},
-          location ? { location: { contains: location, mode: 'insensitive' } } : {},
-        ]
+        role: 'freelancer',
+        ...filters
       },
       select: {
         id: true,
@@ -83,17 +91,19 @@ const searchFreelancers = async (req, res) => {
         skills: true,
         location: true,
         description: true,
-        createdAt: true,
+        createdAt: true
       },
-      orderBy: { createdAt: 'desc' },
-    });
+      orderBy: { createdAt: 'desc' }
+    })
 
-    res.json(freelancers);
+    res.json(freelancers)
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Hakutoiminto epäonnistui' });
+    console.error(err)
+    res.status(500).json({ error: 'Hakutoiminto epäonnistui' })
   }
-};
+}
+
+
 
 module.exports = {
   getFreelancerById,

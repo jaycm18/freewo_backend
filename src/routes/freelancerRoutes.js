@@ -9,7 +9,7 @@ const {
 const { authenticate, authorizeRole } = require('../middleware/authMiddleware');
 
 // Freelancer-haku clientin puolelle (nimi, sijainti, kategoria)
-router.get('/search', authenticate, authorizeRole('freelancer'), searchFreelancers);
+router.get('/search', authenticate, authorizeRole('client'), searchFreelancers);
 
 // Freelancer-profiilin katselu ID:llä (esim. oma profiili tai clientin näkymä)
 router.get('/:id', authenticate, getFreelancerById);

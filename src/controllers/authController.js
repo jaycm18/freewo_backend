@@ -23,7 +23,7 @@ const generateTokens = (user) => {
 
 // Käyttäjän rekisteröinti
 const register = async (req, res) => {
-  const { email, password, role } = req.body
+  const { email, password, role, name, location, description, skills, category } = req.body
 
   if (!email || !password || !role) {
     return res.status(400).json({ error: 'Täytä kaikki kentät' })
@@ -42,6 +42,11 @@ const register = async (req, res) => {
         email,
         password: hashedPassword,
         role,
+        name,
+        location,
+        description,
+        skills,
+        category,
         refreshToken: null  // 🔒 alustetaan refreshToken kenttä
       }
     })
@@ -87,7 +92,17 @@ const login = async (req, res) => {
       maxAge: 7 * 24 * 60 * 60 * 1000  // 7 päivää
     })
 
-    res.status(200).json({ message: 'Kirjautuminen onnistui', accessToken })
+    // Lähetetään myös käyttäjän nimi ja rooli vastauksessa
+    res.status(200).json({
+      message: 'Kirjautuminen onnistui',
+      accessToken,
+      user: {
+        id: user.id,
+        email: user.email,
+        role: user.role,
+        name: user.name  // Lähetetään myös nimi
+      }
+    })
   } catch (err) {
     console.error(err)
     res.status(500).json({ error: 'Jotain meni pieleen' })
@@ -143,8 +158,42 @@ const logout = async (req, res) => {
   res.status(200).json({ message: 'Uloskirjautuminen onnistui' })
 }
 
+// Suojattu reitti: palauttaa kirjautuneen käyttäjän tiedot
+const me = async (req, res) => {
+  const authHeader = req.headers.authorization
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ error: 'Token puuttuu' })
+  }
 
-module.exports = { register, login, refreshToken, logout }
+  const token = authHeader.split(' ')[1]
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET)
+    const user = await prisma.user.findUnique({
+      where: { id: decoded.userId },
+      select: {
+        id: true,
+        email: true,
+        role: true,
+        name: true  // haetaan myös nimi
+      }
+    })
+
+    if (!user) {
+      return res.status(404).json({ error: 'Käyttäjää ei löytynyt' })
+    }
+
+    res.status(200).json({
+      message: 'Tämä on suojattu reitti',
+      user
+    })
+  } catch (err) {
+    console.error('Virhe me-reitillä:', err)
+    res.status(403).json({ error: 'Virheellinen token' })
+  }
+}
+
+module.exports = { register, login, refreshToken, logout, me }
 // Tämä tiedosto sisältää käyttäjien rekisteröinti- ja kirjautumislogiikan, tokenien uusimisen sekä uloskirjautumisen toiminnallisuudet.
 // Se käyttää Prisma ORM:ää tietokannan käsittelyyn, bcryptiä salasanojen hashaukseen ja jwt:tä tokenien luomiseen ja tarkistamiseen.
 // Se myös käsittelee evästeitä käyttäjätietojen turvalliseen tallentamiseen ja siirtämiseen.

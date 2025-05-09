@@ -7,11 +7,13 @@ const createJob = async (req, res) => {
 
   const userId = req.user.userId || req.user.id
 
-  if (!userId) {
-    return res.status(400).json({ error: 'Käyttäjätunnus puuttuu' })
-  }
-
   try {
+    // Tarkistetaan, että käyttäjä on CLIENT
+    const user = await prisma.user.findUnique({ where: { id: userId } })
+    if (user.role !== 'client') {
+      return res.status(403).json({ error: 'Vain asiakas voi luoda toimeksiannon' })
+    }
+    
     const newJob = await prisma.job.create({
       data: {
         title,
