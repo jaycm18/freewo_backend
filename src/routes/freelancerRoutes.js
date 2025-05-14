@@ -1,25 +1,33 @@
-const express = require('express');
-const router = express.Router();
+const express = require('express')
+const router = express.Router()
 const {
+  getFreelancers,
   getFreelancerById,
+  getFreelancerProfile,
   updateFreelancerProfile,
   deleteFreelancerProfile,
   searchFreelancers
-} = require('../controllers/freelancerController');
-const { authenticate, authorizeRole } = require('../middleware/authMiddleware');
+} = require('../controllers/freelancerController')
+const { authenticate, authorizeRole } = require('../middleware/authMiddleware')
+
+// Freelancerien listaaminen (kaikki freelancerit)
+router.get('/', authenticate, authorizeRole('client'), getFreelancers) // Lisää tämä reitti
 
 // Freelancer-haku clientin puolelle (nimi, sijainti, kategoria)
-router.get('/search', authenticate, authorizeRole('client'), searchFreelancers);
+router.get('/search', authenticate, authorizeRole('client'), searchFreelancers)
 
-// Freelancer-profiilin katselu ID:llä (esim. oma profiili tai clientin näkymä)
-router.get('/:id', authenticate, getFreelancerById);
+// Freelancerin profiilin katselu (vain oma profiili)
+router.get('/me', authenticate, authorizeRole('freelancer'), getFreelancerProfile)
 
 // Freelancerin profiilin muokkaus (vain oma profiili)
-router.put('/:id', authenticate, authorizeRole('freelancer'), updateFreelancerProfile);
+router.put('/me', authenticate, authorizeRole('freelancer'), updateFreelancerProfile)
 
 // Freelancerin profiilin poisto (vain oma profiili)
-router.delete('/:id', authenticate, authorizeRole('freelancer'), deleteFreelancerProfile);
+router.delete('/me', authenticate, authorizeRole('freelancer'), deleteFreelancerProfile)
 
-module.exports = router;
+// Freelancer-profiilin katselu ID:llä (clientin näkymä)
+router.get('/:id', authenticate, getFreelancerById)
+
+module.exports = router
 // Tämä tiedosto sisältää reitit freelancerin profiilin katseluun, muokkaukseen ja poistamiseen
 // sekä freelancerien hakemiseen nimellä, sijainnilla ja kategoriassa

@@ -1,6 +1,28 @@
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
+// Freelancerien listaaminen (kaikki freelancerit)
+const getFreelancers = async (req, res) => {
+  try {
+    const freelancers = await prisma.user.findMany({
+      where: { role: 'freelancer' },
+      select: {
+        id: true,
+        name: true,
+        category: true,
+        skills: true,
+        location: true,
+        description: true,
+        createdAt: true,
+      },
+    });
+    res.json(freelancers);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Freelancereiden haku epäonnistui' });
+  }
+};
+
 // Freelancerin profiilin katselu ID:llä
 const getFreelancerById = async (req, res) => {
   const { id } = req.params;
@@ -30,6 +52,40 @@ const getFreelancerById = async (req, res) => {
     res.status(500).json({ error: 'Freelancerin profiilin haku epäonnistui' });
   }
 };
+
+// Hae kirjautuneen freelancerin profiili
+const getFreelancerProfile = async (req, res) => {
+  
+  const userId = req.user.userId || req.user.id // Haetaan käyttäjän ID tokenista
+  
+
+  try {
+    const freelancer = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        category: true,
+        skills: true,
+        location: true,
+        description: true,
+        createdAt: true,
+      },
+    })
+
+    // Tarkistetaan löytyykö freelancer
+
+    if (!freelancer) {
+      return res.status(404).json({ error: 'Freelanceria ei löytynyt' })
+    }
+
+    res.json(freelancer)
+  } catch (err) {
+    console.error(err)
+    res.status(500).json({ error: 'Profiilin haku epäonnistui' })
+  }
+}
 
 // Freelancerin profiilin päivitys
 const updateFreelancerProfile = async (req, res) => {
@@ -106,7 +162,9 @@ const searchFreelancers = async (req, res) => {
 
 
 module.exports = {
+  getFreelancers,
   getFreelancerById,
+  getFreelancerProfile,
   updateFreelancerProfile,
   deleteFreelancerProfile,
   searchFreelancers

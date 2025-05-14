@@ -31,7 +31,7 @@ const getPublicJobs = async (req, res) => {
 const getPublicFreelancers = async (req, res) => {
   try {
     const freelancers = await prisma.user.findMany({
-      where: { role: 'FREELANCER' },
+      where: { role: 'freelancer' },
       take: 5,
       orderBy: { createdAt: 'desc' },
       select: {

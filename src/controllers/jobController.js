@@ -36,6 +36,7 @@ const createJob = async (req, res) => {
 
 // Hae kaikki toimeksiannot (freelancereille)
 const getAllJobs = async (req, res) => {
+  const { category } = req.query
   try {
     const jobs = await prisma.job.findMany({
       orderBy: { createdAt: 'desc' }
@@ -60,6 +61,42 @@ const getMyJobs = async (req, res) => {
   } catch (err) {
     console.error(err)
     res.status(500).json({ error: 'Omien toimeksiantojen haku epäonnistui' })
+  }
+}
+
+// Hae yksittäinen toimeksianto ID:llä (freelancerit voivat tarkastella)
+const getJobById = async (req, res) => {
+  const { id } = req.params
+
+  try {
+    const job = await prisma.job.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        title: true,
+        category: true,
+        location: true,
+        description: true,
+        budget: true,
+        createdAt: true,
+        client: {
+          select: {
+            id: true,
+            name: true,
+            email: true
+          }
+        }
+      }
+    })
+
+    if (!job) {
+      return res.status(404).json({ error: 'Toimeksiantoa ei löytynyt' })
+    }
+
+    res.json(job)
+  } catch (err) {
+    console.error('Toimeksiannon tietojen haku epäonnistui:', err)
+    res.status(500).json({ error: 'Toimeksiannon tietojen haku epäonnistui' })
   }
 }
 
@@ -115,31 +152,41 @@ const deleteJob = async (req, res) => {
   }
 }
 
-// Freelancerit hakevat toimeksiantoja hakusanoilla ja/tai kategorioilla
+// Toimeksiantojen haku nimellä, kategorialla, sijainnilla ja/tai kuvauksella
 const searchJobs = async (req, res) => {
-  const { q, category } = req.query
+  const { q } = req.query
+
+  const filters = q && q.trim() !== ''
+    ? {
+        OR: [
+          { title: { contains: q, mode: 'insensitive' } },
+          { category: { contains: q, mode: 'insensitive' } },
+          { location: { contains: q, mode: 'insensitive' } },
+          { description: { contains: q, mode: 'insensitive' } }
+        ]
+      }
+    : {}
 
   try {
     const jobs = await prisma.job.findMany({
       where: {
-        AND: [
-          category ? { category: { equals: category } } : {},
-          q
-            ? {
-                OR: [
-                  { title: { contains: q, mode: 'insensitive' } },
-                  { description: { contains: q, mode: 'insensitive' } }
-                ]
-              }
-            : {}
-        ]
+        ...filters
+      },
+      select: {
+        id: true,
+        title: true,
+        category: true,
+        location: true,
+        description: true,
+        budget: true,
+        createdAt: true
       },
       orderBy: { createdAt: 'desc' }
     })
 
     res.json(jobs)
   } catch (err) {
-    console.error(err)
+    console.error('Hakutoiminto epäonnistui:', err)
     res.status(500).json({ error: 'Hakutoiminto epäonnistui' })
   }
 }
@@ -149,6 +196,7 @@ module.exports = {
   createJob,
   getAllJobs,
   getMyJobs,
+  getJobById,
   updateJob,
   deleteJob,
   searchJobs

@@ -4,6 +4,7 @@ const {
   createJob,
   getAllJobs,
   getMyJobs,
+  getJobById,
   updateJob,
   deleteJob,
   searchJobs
@@ -22,6 +23,9 @@ router.get('/search', authenticate, authorizeRole('freelancer'), searchJobs)
 
 // Hae omat toimeksiannot (client)
 router.get('/my-jobs', authenticate, authorizeRole('client'), getMyJobs)
+
+// Hae yksittäinen toimeksianto (freelancerit voivat tarkastella)
+router.get('/:id', authenticate, authorizeRole('freelancer'), getJobById)
 
 // Päivitä toimeksianto (vain omat, vain client)
 router.put('/:id', authenticate, authorizeRole('client'), updateJob)

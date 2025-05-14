@@ -9,7 +9,7 @@ const authenticate = (req, res, next) => {
   }
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET)
+    const decoded = jwt.verify(token, process.env.JWT_SECRET)  // Tarkistetaan tokenin voimassaolo
     req.user = decoded  // Lisää käyttäjätiedot requestiin
     next()  // Jatka seuraavaan middlewareen tai reittiin
   } catch (err) {
