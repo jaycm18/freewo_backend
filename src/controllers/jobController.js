@@ -93,7 +93,12 @@ const getJobById = async (req, res) => {
       return res.status(404).json({ error: 'Toimeksiantoa ei löytynyt' })
     }
 
-    res.json(job)
+    // Lisää clientEmail frontille helpommin käytettäväksi
+    res.json({
+      ...job,
+      clientEmail: job.client?.email || null
+    })
+
   } catch (err) {
     console.error('Toimeksiannon tietojen haku epäonnistui:', err)
     res.status(500).json({ error: 'Toimeksiannon tietojen haku epäonnistui' })
@@ -152,6 +157,71 @@ const deleteJob = async (req, res) => {
   }
 }
 
+// Hae kirjautuneen clientin profiili
+const getMyProfile = async (req, res) => {
+  const userId = req.user.userId || req.user.id
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        name: true,
+        email: true,
+        category: true,
+        location: true
+      }
+    })
+    if (!user) {
+      return res.status(404).json({ error: 'Käyttäjää ei löytynyt' })
+    }
+    res.json({
+      name: user.name || '',
+      email: user.email || '',
+      category: user.category || '',
+      location: user.location || ''
+    })
+  } catch (err) {
+    res.status(500).json({ error: 'Profiilin haku epäonnistui' })
+  }
+}
+
+// Päivitä kirjautuneen clientin profiili
+const updateMyProfile = async (req, res) => {
+  const userId = req.user.userId || req.user.id // Haetaan käyttäjän ID tokenista
+  try {
+    const updated = await prisma.user.update({
+      where: { id: userId },
+      data: {
+        name: req.body.name || '',
+        email: req.body.email || '',
+        category: req.body.category || '',
+        location: req.body.location || ''
+      }
+    })
+    res.json({
+      name: updated.name,
+      email: updated.email,
+      category: updated.category,
+      location: updated.location
+    })
+  } catch (err) {
+    console.error(err)
+    res.status(500).json({ error: 'Profiilin päivitys epäonnistui' })
+  }
+}
+
+// Poista kirjautuneen clientin profiili
+const deleteMyProfile = async (req, res) => { 
+  const userId = req.user.userId || req.user.id // Haetaan käyttäjän ID tokenista
+  try {
+    await prisma.user.delete({
+      where: { id: userId }
+    })
+    res.json({ message: 'Profiili poistettu' })
+  } catch (err) {
+    res.status(500).json({ error: 'Profiilin poisto epäonnistui' })
+  }
+}
+
 // Toimeksiantojen haku nimellä, kategorialla, sijainnilla ja/tai kuvauksella
 const searchJobs = async (req, res) => {
   const { q } = req.query
@@ -199,7 +269,10 @@ module.exports = {
   getJobById,
   updateJob,
   deleteJob,
-  searchJobs
+  searchJobs,
+  getMyProfile,
+  updateMyProfile,
+  deleteMyProfile
 }
 // Tämä tiedosto sisältää kaikki toimeksiantoihin liittyvät toiminnot
 // (luonti, haku, päivitys, poisto) sekä freelancerien hakutoiminnon.

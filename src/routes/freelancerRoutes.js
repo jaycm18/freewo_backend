@@ -14,7 +14,7 @@ const { authenticate, authorizeRole } = require('../middleware/authMiddleware')
 router.get('/', authenticate, authorizeRole('client'), getFreelancers) // Lisää tämä reitti
 
 // Freelancer-haku clientin puolelle (nimi, sijainti, kategoria)
-router.get('/search', authenticate, authorizeRole('client'), searchFreelancers)
+router.get('/search', authenticate, authorizeRole('client', 'admin'), searchFreelancers)
 
 // Freelancerin profiilin katselu (vain oma profiili)
 router.get('/me', authenticate, authorizeRole('freelancer'), getFreelancerProfile)
@@ -26,7 +26,7 @@ router.put('/me', authenticate, authorizeRole('freelancer'), updateFreelancerPro
 router.delete('/me', authenticate, authorizeRole('freelancer'), deleteFreelancerProfile)
 
 // Freelancer-profiilin katselu ID:llä (clientin näkymä)
-router.get('/:id', authenticate, getFreelancerById)
+router.get('/:id', authenticate, authorizeRole('client', 'admin'), getFreelancerById)
 
 module.exports = router
 // Tämä tiedosto sisältää reitit freelancerin profiilin katseluun, muokkaukseen ja poistamiseen

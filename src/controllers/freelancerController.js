@@ -34,6 +34,7 @@ const getFreelancerById = async (req, res) => {
       select: {
         id: true,
         name: true,
+        email: true,
         category: true,
         skills: true,
         location: true,

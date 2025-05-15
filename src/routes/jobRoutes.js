@@ -7,7 +7,10 @@ const {
   getJobById,
   updateJob,
   deleteJob,
-  searchJobs
+  searchJobs,
+  getMyProfile,
+  updateMyProfile,
+  deleteMyProfile
 } = require('../controllers/jobController')
 const { authenticate, authorizeRole } = require('../middleware/authMiddleware')
 const validateCategory = require('../middleware/validateCategory')
@@ -19,13 +22,22 @@ router.post('/', authenticate, authorizeRole('client'), validateCategory, create
 router.get('/', authenticate, authorizeRole('freelancer'), getAllJobs)
 
 // Freelancerit hakevat toimeksiantoja hakusanoilla ja/tai kategorioilla
-router.get('/search', authenticate, authorizeRole('freelancer'), searchJobs)
+router.get('/search', authenticate, authorizeRole('freelancer', 'admin'), searchJobs)
+
+// Hae kirjautuneen clientin profiili
+router.get('/me', authenticate, authorizeRole('client'), getMyProfile)
+
+// Päivitä kirjautuneen clientin profiili
+router.put('/me', authenticate, authorizeRole('client'), updateMyProfile)
+
+// Poista kirjautuneen clientin profiili
+router.delete('/me', authenticate, authorizeRole('client'), deleteMyProfile)
 
 // Hae omat toimeksiannot (client)
 router.get('/my-jobs', authenticate, authorizeRole('client'), getMyJobs)
 
-// Hae yksittäinen toimeksianto (freelancerit voivat tarkastella)
-router.get('/:id', authenticate, authorizeRole('freelancer'), getJobById)
+// Hae yksittäinen toimeksianto (freelancerit ja admin voivat tarkastella)
+router.get('/:id', authenticate, authorizeRole('freelancer', 'admin'), getJobById)
 
 // Päivitä toimeksianto (vain omat, vain client)
 router.put('/:id', authenticate, authorizeRole('client'), updateJob)

@@ -7,32 +7,36 @@ const {
   deleteJob,
   searchUsers,
   createUserAsAdmin,
-  getAllUsers
+  getAllUsers,
+  getUserById
 } = require('../controllers/adminController')
 const { authenticate, authorizeRole } = require('../middleware/authMiddleware')
 
 // ADMIN voi listata kaikki jobit
-router.get('/jobs', authenticate, authorizeRole('ADMIN'), getAllJobs)
+router.get('/jobs', authenticate, authorizeRole('admin'), getAllJobs)
 
 // ADMIN voi poistaa freelancerin
-router.delete('/freelancers/:id', authenticate, authorizeRole('ADMIN'), deleteFreelancer)
+router.delete('/freelancers/:id', authenticate, authorizeRole('admin'), deleteFreelancer)
 
 // ADMIN voi poistaa clientin
-router.delete('/clients/:id', authenticate, authorizeRole('ADMIN'), deleteClient)
+router.delete('/clients/:id', authenticate, authorizeRole('admin'), deleteClient)
 
 // ADMIN voi poistaa jobin
-router.delete('/jobs/:id', authenticate, authorizeRole('ADMIN'), deleteJob)
+router.delete('/jobs/:id', authenticate, authorizeRole('admin'), deleteJob)
 
 // ADMIN voi listata kaikki käyttäjät
-router.get('/users', authenticate, authorizeRole('ADMIN'), getAllUsers)
+router.get('/users', authenticate, authorizeRole('admin'), getAllUsers)
 
 // Käyttäjien haku nimellä, sähköpostilla tai kategoriassa
-router.get('/users/search', authenticate, authorizeRole('ADMIN'), searchUsers)
+router.get('/users/search', authenticate, authorizeRole('admin'), searchUsers)
+
+// Admin hakee yksittäisen käyttäjän id:llä
+router.get('/users/:id', authenticate, authorizeRole('admin'), getUserById)
 
 
 // Admin lisää uuden käyttäjän
-router.post('/users', authenticate, authorizeRole('ADMIN'), createUserAsAdmin)
+router.post('/users', authenticate, authorizeRole('admin'), createUserAsAdmin)
 
 module.exports = router
-// Tämä tiedosto sisältää reitit, jotka ovat käytettävissä vain ADMIN-käyttäjille
-// ADMIN voi listata kaikki toimeksiannot, poistaa freelancerin, clientin ja toimeksiannon
+// Tämä tiedosto sisältää reitit, jotka ovat käytettävissä vain admin-käyttäjille
+// admin voi listata kaikki toimeksiannot, poistaa freelancerin, clientin ja toimeksiannon

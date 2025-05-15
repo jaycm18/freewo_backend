@@ -57,7 +57,7 @@ const deleteJob = async (req, res) => {
   }
 }
 
-// Kaikkien käyttäjien hakeminen, valinnainen roolisuodatus (CLIENT, FREELANCER, ADMIN)
+// Kaikkien käyttäjien hakeminen, valinnainen roolisuodatus (client, freelancer, admin)
 const getAllUsers = async (req, res) => {
   const { role } = req.query
 
@@ -84,7 +84,7 @@ const getAllUsers = async (req, res) => {
 
 // Kaikkien käyttäjien haku nimellä, sähköpostilla tai kategoriassa
 const searchUsers = async (req, res) => {
-  const { q, role } = req.query  // q: hakuparametri, role: 'FREELANCER', 'CLIENT', jne.
+  const { q, role } = req.query  // q: hakuparametri, role: 'freelancer', 'client', jne.
   
   try {
     const users = await prisma.user.findMany({
@@ -104,6 +104,27 @@ const searchUsers = async (req, res) => {
   }
 }
 
+// Hakee yksittäisen käyttäjän id:llä
+const getUserById = async (req, res) => {
+  const { id } = req.params
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        email: true,
+        role: true,
+        name: true,
+        category: true,
+        createdAt: true
+      }
+    })
+    if (!user) return res.status(404).json({ error: 'Käyttäjää ei löytynyt' })
+    res.json(user)
+  } catch (err) {
+    res.status(500).json({ error: 'Virhe haettaessa käyttäjää' })
+  }
+}
   
   // Admin lisää uuden käyttäjän
   const createUserAsAdmin = async (req, res) => {
@@ -125,6 +146,9 @@ const searchUsers = async (req, res) => {
           role,
           name,
           category,
+          location:null,
+          skills:null,
+          description: null,
           refreshToken: null
         }
       })
@@ -137,6 +161,6 @@ const searchUsers = async (req, res) => {
   }
   
 
-module.exports = { getAllJobs, deleteFreelancer, deleteClient, deleteJob, searchUsers, createUserAsAdmin, getAllUsers }
+module.exports = { getAllJobs, deleteFreelancer, deleteClient, deleteJob, searchUsers, createUserAsAdmin, getAllUsers, getUserById }
 // Tämä tiedosto sisältää admin-käyttäjän toiminnot, kuten freelancerin, clientin ja toimeksiannon poistamisen
 // sekä kaikkien toimeksiantojen listaamisen. Se käyttää Prisma ORM:ää tietokannan käsittelyyn.

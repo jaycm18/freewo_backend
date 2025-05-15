@@ -19,13 +19,13 @@ const authenticate = (req, res, next) => {
 }
 
 // Roolin tarkistus middleware
-const authorizeRole = (role) => {
+const authorizeRole = (...roles) => { // Käyttäjät voivat olla useassa roolissa
   return (req, res, next) => {
     if (!req.user) {
       return res.status(401).json({ error: 'Käyttäjätiedot puuttuvat' })  // Käyttäjä ei ole kirjautunut sisään
     }
 
-    if (req.user?.role !== role) {
+    if (!roles.includes(req.user.role)) { // Tarkistetaan onko käyttäjällä oikeus
       return res.status(403).json({ error: 'Ei käyttöoikeutta tälle resurssille' })  // Ei oikeus käyttää tätä reittiä
     }
 

@@ -25,6 +25,11 @@ const generateTokens = (user) => {
 const register = async (req, res) => {
   const { email, password, role, name, location, description, skills, category } = req.body
 
+  // Estä admin-roolin luonti API:n kautta
+  if (role && role.toLowerCase() === 'admin') {
+    return res.status(403).json({ error: 'Admin-roolin luominen ei ole sallittua.' })
+  }
+
   if (!email || !password || !role) {
     return res.status(400).json({ error: 'Täytä kaikki kentät' })
   }
