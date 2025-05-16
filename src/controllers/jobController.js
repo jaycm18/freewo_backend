@@ -8,7 +8,7 @@ const createJob = async (req, res) => {
   const userId = req.user.userId || req.user.id
 
   try {
-    // Tarkistetaan, että käyttäjä on CLIENT
+    // Tarkistetaan, että käyttäjä on client
     const user = await prisma.user.findUnique({ where: { id: userId } })
     if (user.role !== 'client') {
       return res.status(403).json({ error: 'Vain asiakas voi luoda toimeksiannon' })
@@ -20,19 +20,20 @@ const createJob = async (req, res) => {
         description,
         category,
         location,
-        budget,
+        budget: budget === undefined || budget === null || budget === '' ? null : Number(budget), //// Tämä rivi tarkistaa, onko budget-arvoa annettu (undefined, null tai tyhjä merkkijono).
         clientId: userId,
       }
     })
 
-    res.status(201).json(newJob)
+    res.status(201).json({
+      ...newJob,
+      budget: newJob.budget === null ? "Ei tiedossa" : newJob.budget
+    })
   } catch (err) {
     console.error('Virhe luotaessa toimeksiantoa:', err)
     res.status(500).json({ error: 'Toimeksiannon luonti epäonnistui' })
   }
 }
-
-
 
 // Hae kaikki toimeksiannot (freelancereille)
 const getAllJobs = async (req, res) => {
@@ -41,7 +42,11 @@ const getAllJobs = async (req, res) => {
     const jobs = await prisma.job.findMany({
       orderBy: { createdAt: 'desc' }
     })
-    res.json(jobs)
+    const jobsWithBudgetText = jobs.map(job => ({
+      ...job,
+      budget: job.budget === null ? "Ei tiedossa" : job.budget
+    }))
+    res.json(jobsWithBudgetText)
   } catch (err) {
     console.error(err)
     res.status(500).json({ error: 'Toimeksiantojen haku epäonnistui' })
@@ -57,7 +62,11 @@ const getMyJobs = async (req, res) => {
       where: { clientId: userId },
       orderBy: { createdAt: 'desc' }
     })
-    res.json(myJobs)
+    const myJobsWithBudgetText = myJobs.map(job => ({
+      ...job,
+      budget: job.budget === null ? "Ei tiedossa" : job.budget
+    }))
+    res.json(myJobsWithBudgetText)
   } catch (err) {
     console.error(err)
     res.status(500).json({ error: 'Omien toimeksiantojen haku epäonnistui' })
@@ -96,6 +105,7 @@ const getJobById = async (req, res) => {
     // Lisää clientEmail frontille helpommin käytettäväksi
     res.json({
       ...job,
+      budget: job.budget === null ? "Ei tiedossa" : job.budget,
       clientEmail: job.client?.email || null
     })
 
@@ -125,11 +135,14 @@ const updateJob = async (req, res) => {
         description,
         category,
         location,
-        budget
+        budget: budget === undefined || budget === null || budget === '' ? null : Number(budget)
       }
     })
 
-    res.json(updatedJob)
+    res.json({
+      ...updatedJob,
+      budget: updatedJob.budget === null ? "Ei tiedossa" : updatedJob.budget
+    })
   } catch (err) {
     console.error(err)
     res.status(500).json({ error: 'Toimeksiannon päivitys epäonnistui' })
@@ -254,13 +267,17 @@ const searchJobs = async (req, res) => {
       orderBy: { createdAt: 'desc' }
     })
 
-    res.json(jobs)
+    const jobsWithBudgetText = jobs.map(job => ({
+      ...job,
+      budget: job.budget === null ? "Ei tiedossa" : job.budget
+    }))
+
+    res.json(jobsWithBudgetText)
   } catch (err) {
     console.error('Hakutoiminto epäonnistui:', err)
     res.status(500).json({ error: 'Hakutoiminto epäonnistui' })
   }
 }
-
 
 module.exports = {
   createJob,

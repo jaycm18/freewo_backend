@@ -12,7 +12,7 @@ model User {
   email        String   @unique
   password     String
   role         String
-  name         String?
+  name         String
   category     String?
   location     String?
   description  String?
@@ -22,11 +22,7 @@ model User {
   jobs         Job[]    @relation("ClientJobs")  // Linkittää Clientiin
 }
 
-enum Role {
-  CLIENT
-  FREELANCER
-  ADMIN
-}
+
 
 model Job {
   id          String   @id @default(uuid())
@@ -34,7 +30,7 @@ model Job {
   description String
   category    String
   location    String
-  budget      Float
+  budget      Float?
   createdAt   DateTime @default(now())
   clientId    String
   client      User     @relation("ClientJobs", fields: [clientId], references: [id])  // Lisää linkin takaisin Useriin
