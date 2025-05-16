@@ -11,7 +11,10 @@ const app = express()
 const prisma = new PrismaClient()
 
 app.use(cors({
-  origin: 'http://localhost:5173', // Frontend-sovelluksen osoite
+  origin: [
+    'http://localhost:5173',
+    'https://freewo-frontend.vercel.app' // Frontend-sovelluksen osoite
+  ],
   credentials: true               // mahdollistaa cookieiden lähetyksen
 }))
 app.use(express.json())
